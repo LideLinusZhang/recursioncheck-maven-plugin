@@ -2,45 +2,42 @@ package edu.cis2019.recursioncheck;
 
 import edu.cis2019.recursioncheck.Common.ErrorReport;
 import edu.cis2019.recursioncheck.Common.Utils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-@Mojo(name = "check-recursion", defaultPhase = LifecyclePhase.TEST)
-@Execute(goal = "check-recursion", phase = LifecyclePhase.TEST)
+@Mojo(name = "check", defaultPhase = LifecyclePhase.TEST_COMPILE)
 public class InfRecursionCheckMojo
-    extends AbstractMojo
-{
+        extends AbstractMojo {
     @Parameter(property = "project.build.directory", required = true)
     private File outputDirectory;
+    @Parameter(property = "project.build.sourceDirectory", required = true)
+    private File sourceDirectory;
 
     public void execute() throws MojoExecutionException {
-        execute(outputDirectory);
+        List<String> classesToAnalyse = getClassesList(sourceDirectory, "");
+        String[] sootArgs = Utils.getSootArgsWithMultipleClassesToAnalyze(InfiniteRecursionAnalysisMain.ANALYSIS_NAME, classesToAnalyse);
+        InfiniteRecursionAnalysisMain.main(sootArgs);
         reportErrors();
     }
 
-    private void execute(File directory) throws MojoExecutionException {
-        for (File file : outputDirectory.listFiles()) {
-            if (file.isDirectory()) {
-                execute(file);
-            } else if (FilenameUtils.getExtension(file.getName()).equals("class")) {
-                String path="";
-                try {
-                    path = file.getCanonicalPath();
-                } catch (IOException e) {
-                    getLog().error(e);
-                }
-                String[] sootArgs = Utils.getSootArgs(InfiniteRecursionAnalysisMain.ANALYSIS_NAME, path);
-                InfiniteRecursionAnalysisMain.main(sootArgs);
-            }
+    private List<String> getClassesList(File sourceDirectory, String prefix) {
+        List<String> result = new ArrayList<String>();
+        for (File subDirectory : sourceDirectory.listFiles(pathname -> pathname.isDirectory())) {
+            result.addAll(getClassesList(subDirectory, prefix + subDirectory.getName() + "."));
         }
+        for (File file :
+                sourceDirectory.listFiles(pathname -> pathname.isFile() && pathname.getName().endsWith("java"))) {
+            int endIndex = file.getName().length() - 5;
+            result.add(prefix + file.getName().substring(0, endIndex));
+        }
+        return result;
     }
 
     private void reportErrors() {

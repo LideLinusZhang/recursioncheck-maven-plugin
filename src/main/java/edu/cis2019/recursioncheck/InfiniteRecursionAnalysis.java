@@ -70,10 +70,7 @@ public class InfiniteRecursionAnalysis extends BodyTransformer
                 }
             }
         }
-        if (recursiveCases.isEmpty())
-            return false;
-        else
-            return true;
+        return !recursiveCases.isEmpty();
     }
 
     private List<UnitValuePair> getAllInvokeExpr(Body body, SootMethod sourceMethod) {
@@ -103,10 +100,7 @@ public class InfiniteRecursionAnalysis extends BodyTransformer
                 }
             }
         }
-        if (baseCases.isEmpty())
-            return false;
-        else
-            return true;
+        return !baseCases.isEmpty();
     }
 
     private List<Value> getUnchangedLocals(Body body) {
@@ -146,19 +140,22 @@ public class InfiniteRecursionAnalysis extends BodyTransformer
         SootMethod method = invokeExpr.getMethod();
 
         callList.add(new UnitValuePair(unitInput, invokeExpr));
-
-        for (Unit unit : method.getActiveBody().getUnits()) {
-            for (ValueBox valueBox : unit.getUseBoxes()) {
-                Value value = valueBox.getValue();
-                if (value instanceof InvokeExpr) {
-                    InvokeExpr call = (InvokeExpr) value;
-                    if (!(callList.contains(new UnitValuePair(unitInput, call)))) {
-                        callList.add(new UnitValuePair(unitInput, call));
-                        if (!(call.getMethod().equals(thisMethod)))
-                            needAnalyze.add(call);
+        try {
+            for (Unit unit : method.retrieveActiveBody().getUnits()) {
+                for (ValueBox valueBox : unit.getUseBoxes()) {
+                    Value value = valueBox.getValue();
+                    if (value instanceof InvokeExpr) {
+                        InvokeExpr call = (InvokeExpr) value;
+                        if (!(callList.contains(new UnitValuePair(unitInput, call)))) {
+                            callList.add(new UnitValuePair(unitInput, call));
+                            if (!(call.getMethod().equals(thisMethod)))
+                                needAnalyze.add(call);
+                        }
                     }
                 }
             }
+        } catch (java.lang.RuntimeException e) {
+
         }
         for (Value value : needAnalyze) {
             List<UnitValuePair> tempCallList = findCallList(callList, unitInput, (InvokeExpr) value, thisMethod);

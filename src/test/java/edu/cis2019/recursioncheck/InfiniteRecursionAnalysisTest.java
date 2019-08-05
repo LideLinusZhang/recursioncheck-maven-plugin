@@ -17,7 +17,14 @@ public class InfiniteRecursionAnalysisTest {
                 "edu.cis2019.recursioncheck.TestCases"));
         Set<ErrorReport> expected = new HashSet<ErrorReport>();
 
-        expected.add(new ErrorReport(ErrorMessage.NO_BASE_CASE, 99));
+        expected.add(new ErrorReport(ErrorMessage.PARAMETERS_UNCHANGED, 25));
+        expected.add(new ErrorReport(ErrorMessage.MUTUAL_RECURSIVE_WARNING, 36));
+        expected.add(new ErrorReport(ErrorMessage.PARAMETERS_UNCHANGED, 14));
+        expected.add(new ErrorReport(ErrorMessage.PARAMETERS_UNCHANGED, 30));
+        expected.add(new ErrorReport(ErrorMessage.NO_BASE_CASE, 8, "testNoBaseCase2"));
+        expected.add(new ErrorReport(ErrorMessage.MUTUAL_RECURSIVE_WARNING, 41));
+        expected.add(new ErrorReport(ErrorMessage.NO_BASE_CASE, 4, "testNoBaseCase1"));
+        expected.add(new ErrorReport(ErrorMessage.PARAMETERS_UNCHANGED, 19));
 
         Assert.assertEquals(expected, Utils.getErrors());
     }
