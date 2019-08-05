@@ -17,6 +17,8 @@ public class InfiniteRecursionAnalysis extends BodyTransformer
 
     @Override
     protected void internalTransform(Body body, String s, Map<String, String> map) {
+        System.out.println("analysis started");
+
         baseCases = new ArrayList<Unit>();
         recursiveCases = new ArrayList<UnitValuePair>();
         invokeExprs = new ArrayList<UnitValuePair>();
@@ -24,8 +26,6 @@ public class InfiniteRecursionAnalysis extends BodyTransformer
         SootMethod sourceMethod = body.getMethod();
         System.out.println();
         System.out.println("Analyzing method: " + sourceMethod.getName());
-
-        //System.out.println(sourceMethod.getActiveBody().toString());
 
         invokeExprs = getAllInvokeExpr(body, sourceMethod);
         if (isRecursive(body.getUnits(), sourceMethod)) {

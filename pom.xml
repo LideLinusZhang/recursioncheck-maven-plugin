@@ -6,7 +6,8 @@
   <packaging>maven-plugin</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>Infinite Recursion Checking Maven Mojo</name>
-  <url>http://maven.apache.org</url>
+  <url>https://github.com/LideLinusZhang/recursioncheck-maven-plugin</url>
+
 
   <properties>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -37,6 +38,13 @@
       <artifactId>commons-io</artifactId>
       <version>2.6</version>
     </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.8.2</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -53,7 +61,6 @@
         </executions>
       </plugin>
     </plugins>
-
   </build>
 
 
