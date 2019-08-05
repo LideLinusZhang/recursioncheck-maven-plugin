@@ -21,6 +21,13 @@
       <version>3.6.1</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <version>3.6.0</version>
+      <optional>true
+      </optional> <!-- annotations are not used at runtime because @Retention(value=CLASS), they are needed only to build the plugin -->
+    </dependency>
+    <dependency>
       <groupId>ca.mcgill.sable</groupId>
       <artifactId>soot</artifactId>
       <version>3.3.0</version>
@@ -31,4 +38,23 @@
       <version>2.6</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <id>default-descriptor</id>
+            <phase>process-classes</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+
+  </build>
+
+
 </project>
