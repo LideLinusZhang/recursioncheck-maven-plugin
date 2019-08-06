@@ -1,0 +1,152 @@
+public class edu.cis2019.recursioncheck.TestCases extends java.lang.Object
+{
+
+    public void <init>()
+    {
+        edu.cis2019.recursioncheck.TestCases r0;
+
+        r0 := @this: edu.cis2019.recursioncheck.TestCases;
+
+        specialinvoke r0.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+
+    public static void testNoBaseCase1()
+    {
+        staticinvoke <edu.cis2019.recursioncheck.TestCases: void testNoBaseCase1()>();
+
+        return;
+    }
+
+    public static int testNoBaseCase2()
+    {
+        int $i0;
+
+        $i0 = staticinvoke <edu.cis2019.recursioncheck.TestCases: int testNoBaseCase2()>();
+
+        return $i0;
+    }
+
+    public static boolean testNoChangeInParameters1(int, int)
+    {
+        int i0, i1;
+        boolean $z0;
+
+        i0 := @parameter0: int;
+
+        i1 := @parameter1: int;
+
+        if i0 != 1 goto label1;
+
+        return 0;
+
+     label1:
+        $z0 = staticinvoke <edu.cis2019.recursioncheck.TestCases: boolean testNoChangeInParameters1(int,int)>(51, 51);
+
+        return $z0;
+    }
+
+    public static boolean testNoChangInParameters2(int, int)
+    {
+        int i0, i1;
+        boolean $z0;
+
+        i0 := @parameter0: int;
+
+        i1 := @parameter1: int;
+
+        if i0 != 1 goto label1;
+
+        return 0;
+
+     label1:
+        $z0 = staticinvoke <edu.cis2019.recursioncheck.TestCases: boolean testNoChangInParameters2(int,int)>(i0, i1);
+
+        return $z0;
+    }
+
+    public static boolean testNoChangInParameters3(int, int)
+    {
+        int i0, i1;
+        boolean $z0;
+
+        i0 := @parameter0: int;
+
+        i1 := @parameter1: int;
+
+        if i0 != 1 goto label1;
+
+        return 0;
+
+     label1:
+        $z0 = staticinvoke <edu.cis2019.recursioncheck.TestCases: boolean testNoChangInParameters3(int,int)>(i0, i1);
+
+        return $z0;
+    }
+
+    public static boolean testNoChangInParameters4(int, int, int)
+    {
+        int i0, i1, i2;
+        boolean $z0;
+
+        i0 := @parameter0: int;
+
+        i1 := @parameter1: int;
+
+        i2 := @parameter2: int;
+
+        if i0 != 1 goto label1;
+
+        return 0;
+
+     label1:
+        $z0 = staticinvoke <edu.cis2019.recursioncheck.TestCases: boolean testNoChangInParameters4(int,int,int)>(i1, i2, i0);
+
+        return $z0;
+    }
+
+    public static boolean testMutualRecursive(int, int)
+    {
+        int i0, i1, $i2;
+        java.io.PrintStream $r0;
+
+        i0 := @parameter0: int;
+
+        i1 := @parameter1: int;
+
+        $r0 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r0.<java.io.PrintStream: void println(int)>(i0);
+
+        $i2 = i0 + i1;
+
+        staticinvoke <edu.cis2019.recursioncheck.TestCases: boolean testMutualRecursive2(int)>($i2);
+
+        return 0;
+    }
+
+    public static boolean testMutualRecursive2(int)
+    {
+        int i0, $i1;
+        boolean $z1;
+
+        i0 := @parameter0: int;
+
+        staticinvoke <edu.cis2019.recursioncheck.TestCases: boolean testMutualRecursive(int,int)>(i0, i0);
+
+        $i1 = i0 + i0;
+
+        if $i1 != 0 goto label1;
+
+        $z1 = 1;
+
+        goto label2;
+
+     label1:
+        $z1 = 0;
+
+     label2:
+        return $z1;
+    }
+}

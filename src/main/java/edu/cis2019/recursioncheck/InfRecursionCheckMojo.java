@@ -15,15 +15,22 @@ import java.util.List;
 @Mojo(name = "check", defaultPhase = LifecyclePhase.TEST_COMPILE)
 public class InfRecursionCheckMojo
         extends AbstractMojo {
-    @Parameter(property = "project.build.directory", required = true)
+    @Parameter(property = "project.build.outputDirectory", required = true)
     private File outputDirectory;
     @Parameter(property = "project.build.sourceDirectory", required = true)
     private File sourceDirectory;
+    @Parameter(property = "project.build.directory", required = true)
+    private File buildDirectory;
 
     public void execute() throws MojoExecutionException {
         List<String> classesToAnalyse = getClassesList(sourceDirectory, "");
-        String[] sootArgs = Utils.getSootArgsWithMultipleClassesToAnalyze(InfiniteRecursionAnalysisMain.ANALYSIS_NAME, classesToAnalyse);
-        InfiniteRecursionAnalysisMain.main(sootArgs);
+        String sootClasspath = Utils.getSootClasspath(outputDirectory.getPath(), buildDirectory.getPath());
+        String[] sootArgs = Utils.getSootArgs(InfiniteRecursionAnalysisMain.ANALYSIS_NAME, sootClasspath, classesToAnalyse);
+        try {
+            InfiniteRecursionAnalysisMain.main(sootArgs, classesToAnalyse);
+        } catch (Exception e) {
+            getLog().error(e);
+        }
         reportErrors();
     }
 

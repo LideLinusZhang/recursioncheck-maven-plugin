@@ -39,7 +39,7 @@ public class Utils {
      * on classToAnalyze.  Mostly involves setting up a few command-line
      * options and the classpath.
      */
-    public static String[] getSootArgs(String analysisToRun, String classesToAnalyze) {
+    public static String[] getSootArgs(String analysisToRun, String classToAnalyze) {
         String separator = System.getProperty("file.separator");
         String pathSeparator = System.getProperty("path.separator");
         String javaHomePath = System.getProperty("java.home");
@@ -47,24 +47,32 @@ public class Utils {
         rtJarPath += pathSeparator + javaHomePath + separator + "lib" + separator + "jce.jar";
         String sootClasspath = rtJarPath + pathSeparator + "target" + separator + "test-classes";
         sootClasspath += pathSeparator + "target" + separator + "classes";
-        String[] args = {"-cp", sootClasspath, "-keep-line-number", "-f", "J", "-p", analysisToRun, "on", classesToAnalyze};
+        String[] args = {"-cp", sootClasspath, "-keep-line-number", "-f", "J", "-p", analysisToRun, "on", classToAnalyze};
 
         return args;
     }
 
-    public static String[] getSootArgsWithMultipleClassesToAnalyze(String analysisToRun, List<String> classesToAnalyze) {
+    public static String getSootClasspath(String outputPath, String buildPath) {
         String separator = System.getProperty("file.separator");
         String pathSeparator = System.getProperty("path.separator");
         String javaHomePath = System.getProperty("java.home");
         String rtJarPath = javaHomePath + separator + "lib" + separator + "rt.jar";
         rtJarPath += pathSeparator + javaHomePath + separator + "lib" + separator + "jce.jar";
-        String sootClasspath = rtJarPath + pathSeparator + "target" + separator + "test-classes";
-        sootClasspath += pathSeparator + "target" + separator + "classes";
+        String sootClasspath = rtJarPath + pathSeparator + outputPath;
+        sootClasspath += pathSeparator + buildPath + separator + "dependency";
+
+        System.out.println(sootClasspath);
+
+        return sootClasspath;
+    }
+
+    public static String[] getSootArgs(String analysisToRun, String sootClasspath, List<String> classesToAnalyze) {
         List<String> result = new ArrayList<>();
         result.add("-cp");
         result.add(sootClasspath);
         result.add("-pp");
         result.add("-keep-line-number");
+        result.add("-allow-phantom-refs");
         result.add("-f");
         result.add("J");
         result.add("-p");
@@ -82,7 +90,6 @@ public class Utils {
     public static void runSoot(String[] args) {
         try {
             forbidSystemExitCall();
-            //Scene.v().addBasicClass("java.lang.Object", BODIES);
             Main.main(args);
             Utils.enableSystemExitCall();
         } catch (Utils.ExitTrappedException e) {

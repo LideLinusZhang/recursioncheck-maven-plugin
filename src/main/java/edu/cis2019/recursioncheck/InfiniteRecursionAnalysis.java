@@ -4,27 +4,47 @@ import edu.cis2019.recursioncheck.Common.ErrorMessage;
 import edu.cis2019.recursioncheck.Common.Utils;
 import soot.*;
 import soot.jimple.*;
+import soot.util.Chain;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class InfiniteRecursionAnalysis extends BodyTransformer
-{
+public class InfiniteRecursionAnalysis extends BodyTransformer {
     private List<Unit> baseCases;
     private List<UnitValuePair> recursiveCases;
     private List<UnitValuePair> invokeExprs;
 
+    public static InfiniteRecursionAnalysis instance() {
+        return theInstance;
+    }
+
+    private boolean isRecursive(PatchingChain<Unit> units, SootMethod sourceMethod) {
+        for (Unit unit : units) {
+            List<ValueBox> valueBoxes = unit.getUseBoxes();
+            for (ValueBox valueBox : valueBoxes) {
+                Value value = valueBox.getValue();
+                if (value instanceof InvokeExpr) {
+                    SootMethod invokedMethod = ((InvokeExpr) value).getMethod();
+                    if (invokedMethod == sourceMethod) {
+                        recursiveCases.add(new UnitValuePair(unit, (InvokeExpr) value));
+                    }
+                }
+            }
+        }
+        return !recursiveCases.isEmpty();
+    }
+
     @Override
     protected void internalTransform(Body body, String s, Map<String, String> map) {
-        System.out.println("analysis started");
+        System.out.println();
+        System.out.println("Analysis started");
 
         baseCases = new ArrayList<Unit>();
         recursiveCases = new ArrayList<UnitValuePair>();
         invokeExprs = new ArrayList<UnitValuePair>();
 
         SootMethod sourceMethod = body.getMethod();
-        System.out.println();
         System.out.println("Analyzing method: " + sourceMethod.getName());
 
         invokeExprs = getAllInvokeExpr(body, sourceMethod);
@@ -54,37 +74,18 @@ public class InfiniteRecursionAnalysis extends BodyTransformer
                     Utils.reportWarning(pair.unit, ErrorMessage.MUTUAL_RECURSIVE_WARNING);
             }
         }
+        System.out.println(sourceMethod.getName() + " analysis ended.");
+        System.out.println();
     }
 
-    private boolean isRecursive(PatchingChain<Unit> units, SootMethod sourceMethod) {
-        for (Unit unit : units) {
-            System.out.println(unit);
-            List<ValueBox> valueBoxes = unit.getUseBoxes();
-            for (ValueBox valueBox : valueBoxes) {
-                Value value = valueBox.getValue();
-                if (value instanceof InvokeExpr) {
-                    SootMethod invokedMethod = ((InvokeExpr) value).getMethod();
-                    if (invokedMethod == sourceMethod) {
-                        recursiveCases.add(new UnitValuePair(unit, (InvokeExpr) value));
-                    }
-                }
-            }
-        }
-        return !recursiveCases.isEmpty();
-    }
+    private boolean isValidInvokeExpr(Value expr) {
 
-    private List<UnitValuePair> getAllInvokeExpr(Body body, SootMethod sourceMethod) {
-        List<UnitValuePair> result = new ArrayList<UnitValuePair>();
-        for (Unit unit : body.getUnits()) {
-            for (ValueBox valueBox : unit.getUseBoxes()) {
-                Value value = valueBox.getValue();
-                if (value instanceof InvokeExpr && !(value instanceof SpecialInvokeExpr)) {
-                    if (((InvokeExpr) value).getMethod() != sourceMethod)
-                        result.add(new UnitValuePair(unit, (InvokeExpr) value));
-                }
-            }
+        if (expr instanceof InvokeExpr && !(expr instanceof VirtualInvokeExpr
+                || expr instanceof SpecialInvokeExpr)) {
+            SootClass definedClass = ((InvokeExpr) expr).getMethod().getDeclaringClass();
+            return definedClass.isApplicationClass();
         }
-        return result;
+        return false;
     }
 
     private boolean hasBaseCase(PatchingChain<Unit> units, SootMethod sourceMethod) {
@@ -134,36 +135,52 @@ public class InfiniteRecursionAnalysis extends BodyTransformer
         return result;
     }
 
+    private List<UnitValuePair> getAllInvokeExpr(Body body, SootMethod sourceMethod) {
+        List<UnitValuePair> result = new ArrayList<UnitValuePair>();
+        for (Unit unit : body.getUnits()) {
+            for (ValueBox valueBox : unit.getUseBoxes()) {
+                Value value = valueBox.getValue();
+                if (isValidInvokeExpr(value)) {
+                    if (((InvokeExpr) value).getMethod() != sourceMethod)
+                        result.add(new UnitValuePair(unit, (InvokeExpr) value));
+                }
+            }
+        }
+        return result;
+    }
+
     private List<UnitValuePair> findCallList(List<UnitValuePair> callList,
                                              Unit unitInput, InvokeExpr invokeExpr, SootMethod thisMethod) {
-        List<Value> needAnalyze = new ArrayList<Value>();
+        if (!isValidInvokeExpr(invokeExpr)) {
+            return callList;
+        }
+        ArrayList<Value> needAnalyze = new ArrayList<Value>();
         SootMethod method = invokeExpr.getMethod();
-
         callList.add(new UnitValuePair(unitInput, invokeExpr));
-        try {
-            for (Unit unit : method.retrieveActiveBody().getUnits()) {
-                for (ValueBox valueBox : unit.getUseBoxes()) {
-                    Value value = valueBox.getValue();
-                    if (value instanceof InvokeExpr) {
-                        InvokeExpr call = (InvokeExpr) value;
-                        if (!(callList.contains(new UnitValuePair(unitInput, call)))) {
-                            callList.add(new UnitValuePair(unitInput, call));
-                            if (!(call.getMethod().equals(thisMethod)))
-                                needAnalyze.add(call);
-                        }
+        Chain<Unit> methodUnits;
+        methodUnits = method.getActiveBody().getUnits();
+        for (Unit unit : methodUnits) {
+            for (ValueBox valueBox : unit.getUseBoxes()) {
+                Value value = valueBox.getValue();
+                if (isValidInvokeExpr(value)) {
+                    InvokeExpr call = (InvokeExpr) value;
+                    if (!(callList.contains(new UnitValuePair(unitInput, call)))) {
+                        callList.add(new UnitValuePair(unitInput, call));
+                        if (!(call.getMethod().equals(thisMethod)))
+                            needAnalyze.add(call);
                     }
                 }
             }
-        } catch (java.lang.RuntimeException e) {
-
         }
-        for (Value value : needAnalyze) {
-            List<UnitValuePair> tempCallList = findCallList(callList, unitInput, (InvokeExpr) value, thisMethod);
-            for (UnitValuePair pair : tempCallList)
+        for (int i = 0; i < needAnalyze.size(); i++) {
+            Value value = needAnalyze.get(i);
+            for (UnitValuePair pair : findCallList(callList, unitInput, (InvokeExpr) value, thisMethod))
                 callList.add(pair);
         }
         return callList;
     }
+
+    private static InfiniteRecursionAnalysis theInstance = new InfiniteRecursionAnalysis();
 
     private class UnitValuePair {
         public final Unit unit;
@@ -173,8 +190,16 @@ public class InfiniteRecursionAnalysis extends BodyTransformer
             this.unit = unit;
             this.value = value;
         }
-    }
 
-    private static InfiniteRecursionAnalysis theInstance = new InfiniteRecursionAnalysis();
-    public static InfiniteRecursionAnalysis instance() { return theInstance; }
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            else if (!(o instanceof UnitValuePair))
+                return false;
+            else {
+                UnitValuePair other = (UnitValuePair) o;
+                return this.unit.equals(other.unit) && this.value.equals(other.value);
+            }
+        }
+    }
 }

@@ -33,6 +33,7 @@ public class TestCases {
     public static boolean testMutualRecursive(int a, int b) {
         if (false)
             return true;
+        System.out.println(a);
         testMutualRecursive2(a + b);
         return false;
     }
