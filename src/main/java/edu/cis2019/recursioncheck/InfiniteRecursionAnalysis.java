@@ -37,17 +37,21 @@ public class InfiniteRecursionAnalysis extends BodyTransformer {
 
     @Override
     protected void internalTransform(Body body, String s, Map<String, String> map) {
-//        System.out.println();
-//        System.out.println("Analysis started");
-
         baseCases = new ArrayList<Unit>();
         recursiveCases = new ArrayList<UnitValuePair>();
         invokeExprs = new ArrayList<UnitValuePair>();
-
         SootMethod sourceMethod = body.getMethod();
-//        System.out.println("Analyzing method: " + sourceMethod.getName());
-
         invokeExprs = getAllInvokeExpr(body, sourceMethod);
+        if (!invokeExprs.isEmpty()) {
+            List<UnitValuePair> callList = new ArrayList<UnitValuePair>();
+            for (UnitValuePair pair : invokeExprs) {
+                callList = findCallList(callList, pair.unit, pair.value, sourceMethod);
+            }
+            for (UnitValuePair pair : callList) {
+                if (pair.value.getMethod().equals(sourceMethod))
+                    Utils.reportWarning(pair.unit, ErrorMessage.MUTUAL_RECURSIVE_WARNING);
+            }
+        }
         if (isRecursive(body.getUnits(), sourceMethod)) {
             if (!hasBaseCase(body.getUnits(), sourceMethod)) {
                 Utils.reportWarning(sourceMethod, ErrorMessage.NO_BASE_CASE);
@@ -64,24 +68,11 @@ public class InfiniteRecursionAnalysis extends BodyTransformer {
                 }
             }
         }
-        if (!invokeExprs.isEmpty()) {
-            List<UnitValuePair> callList = new ArrayList<UnitValuePair>();
-            for (UnitValuePair pair : invokeExprs) {
-                callList = findCallList(callList, pair.unit, pair.value, sourceMethod);
-            }
-            for (UnitValuePair pair : callList) {
-                if (pair.value.getMethod().equals(sourceMethod))
-                    Utils.reportWarning(pair.unit, ErrorMessage.MUTUAL_RECURSIVE_WARNING);
-            }
-        }
-//        System.out.println(sourceMethod.getName() + " analysis ended.");
-//        System.out.println();
     }
 
     private boolean isValidInvokeExpr(Value expr) {
 
-        if (expr instanceof InvokeExpr && !(expr instanceof VirtualInvokeExpr
-                || expr instanceof SpecialInvokeExpr)) {
+        if (expr instanceof InvokeExpr && !(expr instanceof VirtualInvokeExpr || expr instanceof SpecialInvokeExpr)) {
             SootClass definedClass = ((InvokeExpr) expr).getMethod().getDeclaringClass();
             return definedClass.isApplicationClass();
         }
@@ -98,6 +89,21 @@ public class InfiniteRecursionAnalysis extends BodyTransformer {
                     SootMethod invokedMethod = ((InvokeExpr) returnVar).getMethod();
                     if (sourceMethod != invokedMethod)
                         baseCases.add(unit);
+                }
+            } else if (unit instanceof IfStmt) {
+                IfStmt ifStmt = (IfStmt) unit;
+                if (ifStmt.getTarget() instanceof ReturnStmt) {
+                    Stmt target = ifStmt.getTarget();
+                    if (target instanceof ReturnStmt) {
+                        Value returnVar = ((ReturnStmt) target).getOp();
+                        if (returnVar instanceof Constant || returnVar instanceof Ref) {
+                            baseCases.add(unit);
+                        } else if (returnVar instanceof InvokeExpr) {
+                            SootMethod invokedMethod = ((InvokeExpr) returnVar).getMethod();
+                            if (sourceMethod != invokedMethod)
+                                baseCases.add(unit);
+                        }
+                    }
                 }
             }
         }
@@ -149,9 +155,7 @@ public class InfiniteRecursionAnalysis extends BodyTransformer {
         return result;
     }
 
-    private List<UnitValuePair> findCallList(List<UnitValuePair> callList,
-                                             Unit unitInput, InvokeExpr invokeExpr, SootMethod thisMethod) {
-
+    private List<UnitValuePair> findCallList(List<UnitValuePair> callList, Unit unitInput, InvokeExpr invokeExpr, SootMethod thisMethod) {
         SootMethod method = invokeExpr.getMethod();
         callList.add(new UnitValuePair(unitInput, invokeExpr));
         if (!isValidInvokeExpr(invokeExpr)) {

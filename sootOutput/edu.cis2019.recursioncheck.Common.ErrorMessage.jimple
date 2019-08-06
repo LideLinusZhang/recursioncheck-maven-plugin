@@ -75,19 +75,19 @@ public final enum class edu.cis2019.recursioncheck.Common.ErrorMessage extends j
 
         $r0 = new edu.cis2019.recursioncheck.Common.ErrorMessage;
 
-        specialinvoke $r0.<edu.cis2019.recursioncheck.Common.ErrorMessage: void <init>(java.lang.String,int,java.lang.String)>("NO_BASE_CASE", 0, "Definite infinite recursion: This recursive method contains no base case");
+        specialinvoke $r0.<edu.cis2019.recursioncheck.Common.ErrorMessage: void <init>(java.lang.String,int,java.lang.String)>("NO_BASE_CASE", 0, "This recursive method contains no base case");
 
         <edu.cis2019.recursioncheck.Common.ErrorMessage: edu.cis2019.recursioncheck.Common.ErrorMessage NO_BASE_CASE> = $r0;
 
         $r1 = new edu.cis2019.recursioncheck.Common.ErrorMessage;
 
-        specialinvoke $r1.<edu.cis2019.recursioncheck.Common.ErrorMessage: void <init>(java.lang.String,int,java.lang.String)>("MUTUAL_RECURSIVE_WARNING", 1, "Possible infinite recursion: This method may be mutually recursive with another method");
+        specialinvoke $r1.<edu.cis2019.recursioncheck.Common.ErrorMessage: void <init>(java.lang.String,int,java.lang.String)>("MUTUAL_RECURSIVE_WARNING", 1, "This method may be mutually recursive with another method");
 
         <edu.cis2019.recursioncheck.Common.ErrorMessage: edu.cis2019.recursioncheck.Common.ErrorMessage MUTUAL_RECURSIVE_WARNING> = $r1;
 
         $r2 = new edu.cis2019.recursioncheck.Common.ErrorMessage;
 
-        specialinvoke $r2.<edu.cis2019.recursioncheck.Common.ErrorMessage: void <init>(java.lang.String,int,java.lang.String)>("PARAMETERS_UNCHANGED", 2, "Possible infinite recursion: Parameters are unchanged from initial call to recursive call");
+        specialinvoke $r2.<edu.cis2019.recursioncheck.Common.ErrorMessage: void <init>(java.lang.String,int,java.lang.String)>("PARAMETERS_UNCHANGED", 2, "Parameters are unchanged from initial call to recursive call");
 
         <edu.cis2019.recursioncheck.Common.ErrorMessage: edu.cis2019.recursioncheck.Common.ErrorMessage PARAMETERS_UNCHANGED> = $r2;
 

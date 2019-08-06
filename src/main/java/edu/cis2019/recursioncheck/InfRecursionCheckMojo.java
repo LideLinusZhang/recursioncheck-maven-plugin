@@ -50,17 +50,15 @@ public class InfRecursionCheckMojo
     private void reportErrors() {
         for (ErrorReport error : Utils.getErrors()) {
             StringBuilder warning = new StringBuilder();
-            warning.append("warning: ");
-            warning.append(error.getMessage());
+            warning.append(error.getMessage().getErrorMessage());
             if (error.getLine() == -1) {
-                if (error.getName() != null) {
-                    warning.append(" at the declaration of " + error.getName());
-                } else {
-                    warning.append(" (line unknown)");
-                }
+                warning.append(" (line unknown)");
             } else {
                 warning.append(" at line ");
                 warning.append(error.getLine());
+            }
+            if (error.getName() != null) {
+                warning.append(" (from: " + error.getName() + ")");
             }
             getLog().warn(warning.toString());
         }
