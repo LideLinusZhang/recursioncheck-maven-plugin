@@ -60,9 +60,7 @@ public class Utils {
         rtJarPath += pathSeparator + javaHomePath + separator + "lib" + separator + "jce.jar";
         String sootClasspath = rtJarPath + pathSeparator + outputPath;
         sootClasspath += pathSeparator + buildPath + separator + "dependency";
-
-        System.out.println(sootClasspath);
-
+//        System.out.println(sootClasspath);
         return sootClasspath;
     }
 

@@ -37,15 +37,15 @@ public class InfiniteRecursionAnalysis extends BodyTransformer {
 
     @Override
     protected void internalTransform(Body body, String s, Map<String, String> map) {
-        System.out.println();
-        System.out.println("Analysis started");
+//        System.out.println();
+//        System.out.println("Analysis started");
 
         baseCases = new ArrayList<Unit>();
         recursiveCases = new ArrayList<UnitValuePair>();
         invokeExprs = new ArrayList<UnitValuePair>();
 
         SootMethod sourceMethod = body.getMethod();
-        System.out.println("Analyzing method: " + sourceMethod.getName());
+//        System.out.println("Analyzing method: " + sourceMethod.getName());
 
         invokeExprs = getAllInvokeExpr(body, sourceMethod);
         if (isRecursive(body.getUnits(), sourceMethod)) {
@@ -74,8 +74,8 @@ public class InfiniteRecursionAnalysis extends BodyTransformer {
                     Utils.reportWarning(pair.unit, ErrorMessage.MUTUAL_RECURSIVE_WARNING);
             }
         }
-        System.out.println(sourceMethod.getName() + " analysis ended.");
-        System.out.println();
+//        System.out.println(sourceMethod.getName() + " analysis ended.");
+//        System.out.println();
     }
 
     private boolean isValidInvokeExpr(Value expr) {
@@ -151,12 +151,13 @@ public class InfiniteRecursionAnalysis extends BodyTransformer {
 
     private List<UnitValuePair> findCallList(List<UnitValuePair> callList,
                                              Unit unitInput, InvokeExpr invokeExpr, SootMethod thisMethod) {
+
+        SootMethod method = invokeExpr.getMethod();
+        callList.add(new UnitValuePair(unitInput, invokeExpr));
         if (!isValidInvokeExpr(invokeExpr)) {
             return callList;
         }
         ArrayList<Value> needAnalyze = new ArrayList<Value>();
-        SootMethod method = invokeExpr.getMethod();
-        callList.add(new UnitValuePair(unitInput, invokeExpr));
         Chain<Unit> methodUnits;
         methodUnits = method.getActiveBody().getUnits();
         for (Unit unit : methodUnits) {
@@ -174,8 +175,7 @@ public class InfiniteRecursionAnalysis extends BodyTransformer {
         }
         for (int i = 0; i < needAnalyze.size(); i++) {
             Value value = needAnalyze.get(i);
-            for (UnitValuePair pair : findCallList(callList, unitInput, (InvokeExpr) value, thisMethod))
-                callList.add(pair);
+            callList = findCallList(callList, unitInput, (InvokeExpr) value, thisMethod);
         }
         return callList;
     }
