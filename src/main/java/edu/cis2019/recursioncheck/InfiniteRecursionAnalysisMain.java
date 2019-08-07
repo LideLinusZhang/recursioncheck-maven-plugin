@@ -15,7 +15,6 @@ public class InfiniteRecursionAnalysisMain
      */
     public static void main(String[] args, List<String> classesToAnalyse) {
         InfiniteRecursionAnalysisMain.classesToAnalyse = classesToAnalyse;
-//        System.out.println("Soot Started");
         PackManager.v().getPack("jap").add(new Transform(ANALYSIS_NAME, InfiniteRecursionAnalysis.instance()));
         Utils.runSoot(args);
         System.out.println("Total warnings: " + Utils.getErrors().size());

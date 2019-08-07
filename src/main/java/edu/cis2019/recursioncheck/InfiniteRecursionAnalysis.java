@@ -80,7 +80,18 @@ public class InfiniteRecursionAnalysis extends BodyTransformer {
     }
 
     private boolean hasBaseCase(PatchingChain<Unit> units, SootMethod sourceMethod) {
+        List<Local> localOfInvokeExpr = new ArrayList<>();
         for (Unit unit : units) {
+            if (unit instanceof DefinitionStmt) {
+                DefinitionStmt def = (DefinitionStmt) unit;
+                if (def.getLeftOp() instanceof Local) {
+                    Local local = (Local) def.getLeftOp();
+                    Value rightOp = def.getRightOp();
+                    if (rightOp instanceof InvokeExpr) {
+                        localOfInvokeExpr.add(local);
+                    }
+                }
+            }
             if (unit instanceof ReturnStmt) {
                 Value returnVar = ((ReturnStmt) unit).getOp();
                 if (returnVar instanceof Constant || returnVar instanceof Ref) {
@@ -89,21 +100,9 @@ public class InfiniteRecursionAnalysis extends BodyTransformer {
                     SootMethod invokedMethod = ((InvokeExpr) returnVar).getMethod();
                     if (sourceMethod != invokedMethod)
                         baseCases.add(unit);
-                }
-            }
-            if (unit instanceof IfStmt) {
-                IfStmt ifStmt = (IfStmt) unit;
-                if (ifStmt.getTarget() instanceof ReturnStmt) {
-                    Stmt target = ifStmt.getTarget();
-                    if (target instanceof ReturnStmt) {
-                        Value returnVar = ((ReturnStmt) target).getOp();
-                        if (returnVar instanceof Constant || returnVar instanceof Ref) {
-                            baseCases.add(unit);
-                        } else if (returnVar instanceof InvokeExpr) {
-                            SootMethod invokedMethod = ((InvokeExpr) returnVar).getMethod();
-                            if (sourceMethod != invokedMethod)
-                                baseCases.add(unit);
-                        }
+                } else if (returnVar instanceof Local) {
+                    if (!localOfInvokeExpr.contains(returnVar)) {
+                        baseCases.add(unit);
                     }
                 }
             }

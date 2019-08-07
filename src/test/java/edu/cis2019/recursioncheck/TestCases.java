@@ -42,4 +42,9 @@ public class TestCases {
         testMutualRecursive(a, a);
         return a + a == 0;
     }
+
+    public static boolean testNoBaseCase3(int i) {
+        boolean j = testNoBaseCase3(i - 1);
+        return j;
+    }
 }
