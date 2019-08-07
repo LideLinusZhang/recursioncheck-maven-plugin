@@ -31,7 +31,7 @@ public class InfiniteRecursionAnalysisTest {
         expected.add(new ErrorReport(ErrorMessage.MUTUAL_RECURSIVE_WARNING, 42));
         expected.add(new ErrorReport(ErrorMessage.NO_BASE_CASE, 4, "testNoBaseCase1"));
         expected.add(new ErrorReport(ErrorMessage.PARAMETERS_UNCHANGED, 19));
-        expected.add(new ErrorReport(ErrorMessage.NO_BASE_CASE, 47, "testNoBaseCase3"));
+        expected.add(new ErrorReport(ErrorMessage.NO_BASE_CASE, 46, "testNoBaseCase3"));
 
         Assert.assertEquals(expected, Utils.getErrors());
     }
