@@ -80,14 +80,9 @@ public class InfiniteRecursionAnalysis extends BodyTransformer {
     }
 
     private boolean hasBaseCase(PatchingChain<Unit> units, SootMethod sourceMethod) {
-        System.out.println();
-        System.out.println("analyzing: " + sourceMethod.getName());
         for (Unit unit : units) {
-            System.out.println(unit);
             if (unit instanceof ReturnStmt) {
-                System.out.println("ReturnStmt found");
                 Value returnVar = ((ReturnStmt) unit).getOp();
-                System.out.println(returnVar);
                 if (returnVar instanceof Constant || returnVar instanceof Ref) {
                     baseCases.add(unit);
                 } else if (returnVar instanceof InvokeExpr) {
@@ -97,9 +92,7 @@ public class InfiniteRecursionAnalysis extends BodyTransformer {
                 }
             }
             if (unit instanceof IfStmt) {
-                System.out.println("IfStmt found");
                 IfStmt ifStmt = (IfStmt) unit;
-                System.out.println("Target: " + ifStmt.getTarget());
                 if (ifStmt.getTarget() instanceof ReturnStmt) {
                     Stmt target = ifStmt.getTarget();
                     if (target instanceof ReturnStmt) {
@@ -115,8 +108,6 @@ public class InfiniteRecursionAnalysis extends BodyTransformer {
                 }
             }
         }
-        System.out.println("Analyze ended");
-        System.out.println();
         return !baseCases.isEmpty();
     }
 
