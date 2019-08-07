@@ -52,15 +52,13 @@ public class Utils {
         return args;
     }
 
-    public static String getSootClasspath(String outputPath, String buildPath) {
+    public static String getSootClasspath(String outputPath) {
         String separator = System.getProperty("file.separator");
         String pathSeparator = System.getProperty("path.separator");
         String javaHomePath = System.getProperty("java.home");
         String rtJarPath = javaHomePath + separator + "lib" + separator + "rt.jar";
         rtJarPath += pathSeparator + javaHomePath + separator + "lib" + separator + "jce.jar";
         String sootClasspath = rtJarPath + pathSeparator + outputPath;
-        sootClasspath += pathSeparator + buildPath + separator + "dependency";
-//        System.out.println(sootClasspath);
         return sootClasspath;
     }
 

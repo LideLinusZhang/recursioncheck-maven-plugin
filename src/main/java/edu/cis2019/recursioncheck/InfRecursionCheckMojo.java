@@ -19,12 +19,10 @@ public class InfRecursionCheckMojo
     private File outputDirectory;
     @Parameter(property = "project.build.sourceDirectory", required = true)
     private File sourceDirectory;
-    @Parameter(property = "project.build.directory", required = true)
-    private File buildDirectory;
 
     public void execute() throws MojoExecutionException {
         List<String> classesToAnalyse = getClassesList(sourceDirectory, "");
-        String sootClasspath = Utils.getSootClasspath(outputDirectory.getPath(), buildDirectory.getPath());
+        String sootClasspath = Utils.getSootClasspath(outputDirectory.getPath());
         String[] sootArgs = Utils.getSootArgs(InfiniteRecursionAnalysisMain.ANALYSIS_NAME, sootClasspath, classesToAnalyse);
         try {
             InfiniteRecursionAnalysisMain.main(sootArgs, classesToAnalyse);
@@ -58,7 +56,7 @@ public class InfRecursionCheckMojo
                 warning.append(error.getLine());
             }
             if (error.getName() != null) {
-                warning.append(" (from: " + error.getName() + ")");
+                warning.append(" of " + error.getName());
             }
             getLog().warn(warning.toString());
         }
